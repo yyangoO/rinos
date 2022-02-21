@@ -88,12 +88,12 @@ void init_c(void)
     early_uart_init();                          // initialize UART before enable MMU
     uart_send_string("[BOOT] initialize early UART\r\n");
 
-    init_boot_pt();                             // initialize boot page table
     uart_send_string("[BOOT] install boot page table\r\n");
+    init_boot_pt();                             // initialize boot page table
 
-    el1_mmu_activate();                         // enable MMU
     uart_send_string("[BOOT] enable el1 MMU\r\n");
+    el1_mmu_activate();                         // enable MMU
 
-    start_kernel(secondary_boot_flag);          // call kernel main
     uart_send_string("[BOOT] jump to kernel main\r\n");
+    start_kernel(secondary_boot_flag);          // call kernel main
 }
