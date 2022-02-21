@@ -1,0 +1,7 @@
+*** make qemu-gdb'.
+***
+[BOOT] initialize early UART
+[BOOT] install boot page table
+[BOOT] enable el1 MMU
+[2J[INFO] [ChCore] uart init finished
+[INFO] Address of main() is 0xqemu-system-aarch64: terminating on signal 15 from pid 40954 (make)

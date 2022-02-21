@@ -1,87 +1,122 @@
-/*
- * BSD-3-Clause License
- *
- * Copyright (c) 2016, Matt Redfearn
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice,
- * this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice,
- * this list of conditions and the following disclaimer in the documentation
- * and/or other materials provided with the distribution.
- *
- * 3. Neither the name of the copyright holder nor the names of its
- * contributors may be used to endorse or promote products derived from this
- * software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+/**
+ * @file                    printk.c
+ * @author                  yyang yyangoO@outlook.com & sjtu_yangyang@sjtu.edu.cn
+ * @version                 1.0.0
+ * @date                    24-APR-2021
+ * @section                 description
+ *                          basic I/O function
+ * @section                 platforn
+ * -                        Raspberry Pi 3b
+ * @section                 logs
+ * <table>
+ * <tr><th>date             <th>version     <th>author      <th>description     </tr>
+ * <tr><td>2021.04.24       <td>1.0.0       <td>yyang       <td>initial version </tr>
+ * </tr>
  */
+
+
 #include <common/uart.h>
 
-#define PRINT_BUF_LEN 64
+
+#define PRINT_BUF_LEN       64
+
 
 typedef __builtin_va_list va_list;
+
 #define va_start(v,l)   __builtin_va_start(v,l)
 #define va_end(v)       __builtin_va_end(v)
 #define va_arg(v,l)     __builtin_va_arg(v,l)
 #define va_copy(d,s)    __builtin_va_copy(d,s)
 
+/**
+ * @brief flag of padding
+ * The flag of padding when we print.
+ */
+enum flags 
+{
+	PAD_ZERO = 1,       ///< padding with zero
+	PAD_RIGHT = 2       ///< padding in right
+};
+
+/**
+ * @brief simply output char
+ * Simply output a char instead of the string
+ * @param str       the string
+ * @param c         the char
+ */
 static void simple_outputchar(char **str, char c)
 {
-	if (str) {
+	if (str) 
+    {
 		**str = c;
 		++(*str);
-	} else {
+	} 
+    else 
+    {
 		uart_send(c);
 	}
 }
 
-enum flags {
-	PAD_ZERO = 1,
-	PAD_RIGHT = 2
-};
-
+/**
+ * @brief print
+ * Print the string in the specified format.
+ * @param out       the output string
+ * @param string    the input string
+ * @param width     the width
+ * @param flags     the flags of padding
+ * @return          result (length)
+ */
 static int prints(char **out, const char *string, int width, int flags)
 {
-	int pc = 0, padchar = ' ';
+	int pc = 0;             // the point cursor
+    int padchar = ' ';      // the padding char
 
-	if (width > 0) {
+	if (width > 0)
+    {
 		int len = 0;
 		const char *ptr;
+
+        // get the length of string
 		for (ptr = string; *ptr; ++ptr)
+        {
 			++len;
+        }
+
+        // check and set the wdith
 		if (len >= width)
+        {
 			width = 0;
+        }
 		else
+        {
 			width -= len;
+        }
+
+        // check the padding type
 		if (flags & PAD_ZERO)
+        {
 			padchar = '0';
+        }
 	}
-	if (!(flags & PAD_RIGHT)) {
-		for (; width > 0; --width) {
+
+    // if padding with zeros
+	if (!(flags & PAD_RIGHT)) 
+    {
+		for (; width > 0; --width) 
+        {
 			simple_outputchar(out, padchar);
 			++pc;
 		}
 	}
-	for (; *string; ++string) {
+    // then print each char of string
+	for (; *string; ++string) 
+    {
 		simple_outputchar(out, *string);
 		++pc;
 	}
-	for (; width > 0; --width) {
+    // then print the padding
+	for (; width > 0; --width) 
+    {
 		simple_outputchar(out, padchar);
 		++pc;
 	}
@@ -89,6 +124,18 @@ static int prints(char **out, const char *string, int width, int flags)
 	return pc;
 }
 
+/**
+ * @brief print number
+ * Print number `i` in the base of `base`
+ * @param out       the output string
+ * @param i         the print number
+ * @param base      the base
+ * @param sgin      the flag of print signed number or unsigned number
+ * @param width     the length of printed number
+ * @param flags     the length of printed number at least `width`
+ * @param letbase   the uppercase or lowercase when using hex
+ * @return          result
+ */
 // this function print number `i` in the base of `base` (base > 1)
 // `sign` is the flag of print signed number or unsigned number
 // `width` and `flags` mean the length of printed number at least `width`,
@@ -97,15 +144,15 @@ static int prints(char **out, const char *string, int width, int flags)
 // you may need to call `prints`
 // you do not need to print prefix like "0x", "0"...
 // Remember the most significant digit is printed first.
-static int printk_write_num(char **out, long long i, int base, int sign,
-			    int width, int flags, int letbase)
+static int printk_write_num(char **out, long long i, int base, int sign, int width, int flags, int letbase)
 {
 	char print_buf[PRINT_BUF_LEN];
 	char *s;
 	int t, neg = 0, pc = 0;
 	unsigned long long u = i;
 
-	if (i == 0) {
+	if (i == 0) 
+    {
 		print_buf[0] = '0';
 		print_buf[1] = '\0';
 		return prints(out, print_buf, width, flags);
