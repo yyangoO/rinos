@@ -2,18 +2,18 @@
 
 SECTIONS
 {
-    . = TEXT_OFFSET;
-    img_start = .;
+    . = TEXT_OFFSET;        // current pointer's value is `TEXT_OFFSET`
+    img_start = .;          // get image's start address, which is `TEXT_OFFSET`
     init : {
-        ${init_object}
-    }
+        ${init_object}      // define that .init part is bootloader's binary code
+    }                       // after this, the pointer will be the adress of .init section
 
-    . = ALIGN(SZ_16K);
+    . = ALIGN(SZ_16K);      // align current pointer to be `SZ_16K` in memeory
 
-    init_end = ABSOLUTE(.);
+    init_end = ABSOLUTE(.); // get current pointer's value
 
     .text KERNEL_VADDR + init_end : AT(init_end) {
-        *(.text*)
+        *(.text*)           // set the VMA to be `KERNEL_VADDR` + init_end
     }
 
     . = ALIGN(SZ_64K);
