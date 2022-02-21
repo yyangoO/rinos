@@ -25,23 +25,23 @@
 .extern init_c
 
 
-.global _start                  // define _start could be find by other program
-.type _start, %function         // define the type of _start is function
+.global _start
+.type _start, %function
 _start:
 
-    mrs     x8, mpidr_el1
-    and     x8, x8, #0xff
-    cbz     x8, primary
+    mrs     x8, mpidr_el1       // get current process element's cpu ID
+    and     x8, x8, #0xff       // take low 8 bits
+    cbz     x8, primary         // if 0, it's first process element, go to primary
 
-secondary_hang:                 // make all other kernel in loop
-    bl      secondary_hang
+secondary_hang:
+    bl      secondary_hang      // if not 0, make them in dead loop
 
 primary:
     bl      arm64_elX_to_el1    // turn to el1 from other exception levels
-    adr     x0, boot_cpu_stack  // prepare stack pointer and jump to C
-    add     x0, x0, #0x1000
-    mov     sp, x0
+    adr     x0, boot_cpu_stack  // get the address of boot_cpu_stack
+    add     x0, x0, #0x1000     // give the stack 4096 bytes
+    mov     sp, x0              // set stack pointer registor
     bl      init_c              // jump to init_c
-    b       .                   // should never be here
+    b       .
 
 .size _start, .-_start
