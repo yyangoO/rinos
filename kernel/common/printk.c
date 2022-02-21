@@ -412,12 +412,12 @@ static int simple_vsprintf(char **out, const char *format, va_list ap)
 						break;
 
 					case ('u'):
-						u.hhu = a_arg(ap, unsigned int);
-						pc += rintk_write_num(out, u.lli, 10, 0, width, flags, 'a');
+						u.hhu = va_arg(ap, unsigned int);
+						pc += printk_write_num(out, u.lli, 10, 0, width, flags, 'a');
 						break;
 
 					case ('o'):
-						u.hhu = a_arg(ap, unsigned int);
+						u.hhu = va_arg(ap, unsigned int);
 						pc += printk_write_num(out, u.lli, 8, 0, width, flags, 'a');
 						break;
 
@@ -430,11 +430,7 @@ static int simple_vsprintf(char **out, const char *format, va_list ap)
 						u.hhu =
 						    va_arg(ap, unsigned int);
 						pc +=
-						    printk_write_num(out, u.lli,
-								     16, 0,
-								     width,
-								     flags,
-								     'A');
+						    printk_write_num(out, u.lli, 16, 0, width, flags, 'A');
 						break;
 
 					default:
