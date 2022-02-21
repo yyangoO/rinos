@@ -33,7 +33,7 @@ _start:
     and     x8, x8, #0xff
     cbz     x8, primary
 
-secondary_hang:                 // make all other kernel in loop, TODO
+secondary_hang:                 // make all other kernel in loop
     bl      secondary_hang
 
 primary:
