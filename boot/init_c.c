@@ -53,6 +53,7 @@ void early_uart_init(void);
 /**
  * @brief send string from UART
  * This function sends string by using UART.
+ * @param *     the string's poiner
  */
 void uart_send_string(char *);
 
