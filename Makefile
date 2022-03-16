@@ -15,7 +15,7 @@ gdb:
 	gdb-multiarch -n -x .gdbinit
 
 build: FORCE
-	./scripts/docker_build.sh
+	./scripts/build.sh
 
 qemu: $(IMAGES) 
 	$(QEMU) $(QEMUOPTS)
